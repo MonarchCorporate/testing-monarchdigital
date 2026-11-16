@@ -1,4 +1,7 @@
 /**
+ * Performance: the point light is never toggled (a changing light count recompiles every lit material,
+ * a visible hitch mid-scroll) — it simply sits at intensity 0.
+ *
  * The inner light. There is no visible object: at rest the sphere is empty and dark inside.
  * On scroll, light simply appears:
  *  - a PointLight (physically based) lights the inner faces and walls of the keys, so the glow
@@ -85,12 +88,12 @@ export function Core({ onReady }: { onReady?: (mesh: THREE.Mesh | null) => void 
     const k = store.w.glow
     const bob = config.sphere.bobAmplitude * Math.sin(store.time * config.sphere.bobSpeed * 2) * WORLD_SCALE
     const c = config.sphere.center
-    const on = k > 0.002
+    // drawn (at zero intensity) while the preloader covers the screen, so their shaders compile before the reveal
+    const on = k > 0.002 || store.reveal < 1 || store.time < 1.5
 
     if (light.current) {
       light.current.intensity = C.intensity * k * k
       light.current.position.set(c[0], c[1] + bob, c[2])
-      light.current.visible = on
     }
     if (glow.current) {
       glow.current.visible = on

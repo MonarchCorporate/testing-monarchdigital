@@ -206,13 +206,12 @@ export function CursorLight() {
     if (light.current) {
       light.current.position.copy(tmp.pos)
       light.current.intensity = C.intensity * presence
-      light.current.visible = presence > 0.002
     }
     if (orb.current) {
       orb.current.position.copy(tmp.pos)
       orb.current.quaternion.copy(camera.quaternion)
       orbMat.uniforms.uIntensity.value = presence
-      orb.current.visible = presence > 0.002
+      orb.current.visible = presence > 0.002 || store.reveal < 1 || store.time < 1.5
     }
 
     // ---- trail simulation (ping-pong) ----
@@ -242,7 +241,7 @@ export function CursorLight() {
   const orbSize = C.orbSize * WORLD_SCALE
   return (
     <group>
-      <pointLight ref={light} color={C.color} intensity={0} distance={C.distance * WORLD_SCALE} decay={2} visible={false} />
+      <pointLight ref={light} color={C.color} intensity={0} distance={C.distance * WORLD_SCALE} decay={2} />
       <mesh ref={orb} material={orbMat} visible={false} renderOrder={40} frustumCulled={false}>
         <planeGeometry args={[orbSize, orbSize]} />
       </mesh>

@@ -1,12 +1,16 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Experience } from './scene/Experience'
 import { Interface } from './ui/Interface'
+import { Cursor } from './ui/Cursor'
+import { CaseStudy } from './ui/CaseStudy'
 import { useScrollTimeline } from './scroll/useScrollTimeline'
 import { store } from './state/store'
 import styles from './App.module.css'
 
 export default function App() {
   const stage = useRef<HTMLDivElement>(null)
+  // the 3D scene only runs while its stage is on screen (it pauses under the case study)
+  const [sceneActive, setSceneActive] = useState(true)
   useScrollTimeline(stage)
 
   useEffect(() => {
@@ -26,12 +30,25 @@ export default function App() {
     }
   }, [])
 
+  useEffect(() => {
+    const el = stage.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(([entry]) => setSceneActive(entry.isIntersecting), { threshold: 0 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
   return (
-    <main>
-      <div className={styles.stage} ref={stage}>
-        <Experience />
-        <Interface />
-      </div>
-    </main>
+    <>
+      <main>
+        <div className={styles.stage} ref={stage}>
+          <Experience active={sceneActive} />
+          <Interface />
+        </div>
+        <CaseStudy />
+      </main>
+      {/* outside the pinned stage: a fixed element inside a pinned/transformed parent would stay behind */}
+      <Cursor />
+    </>
   )
 }

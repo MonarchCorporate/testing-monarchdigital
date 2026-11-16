@@ -337,8 +337,11 @@ export const config = {
   },
 
   performance: {
-    dpr: [1, 1.75] as [number, number],
+    dpr: [1, 1.5] as [number, number],
     lowDpr: 1,
+    /** Drawing-buffer budget in device pixels: the pixel ratio is lowered (once, at start) so large or
+     *  high-density screens never shade more than this. 1440 × 900 → ≈1.3, 1920 × 1080 → ≈1.07. */
+    pixelBudget: 2_200_000,
   },
 } as const
 

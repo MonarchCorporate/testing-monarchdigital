@@ -15,6 +15,8 @@ import { content } from '../content'
 import { demo } from './demo'
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
+// the phone address bar showing/hiding must not re-measure the pin (a visible jump mid-scroll)
+ScrollTrigger.config({ ignoreMobileResize: true })
 
 const PHASES = content.phases
 

@@ -116,8 +116,11 @@ function FogSheets() {
   )
   useEffect(() => () => mats.forEach((m) => m.dispose()), [mats])
 
+  const group = useRef<THREE.Group>(null)
   useFrame(({ scene }) => {
     const fade = 1 - store.w.environment
+    // five screen-wide transparent planes are pure overdraw once they have dissolved
+    if (group.current) group.current.visible = fade > 0.001 || store.time < 1.5
     const fogCol = scene.fog?.color
     mats.forEach((m, i) => {
       m.uniforms.uTime.value = store.time
@@ -127,7 +130,7 @@ function FogSheets() {
   })
 
   return (
-    <group>
+    <group ref={group}>
       {SHEETS.map((s, i) => (
         <mesh key={i} position={[0, s.y, s.z]} material={mats[i]} renderOrder={5 + (SHEETS.length - i)} frustumCulled={false}>
           <planeGeometry args={[s.w, s.h]} />
@@ -208,7 +211,7 @@ function LightShafts() {
       m.uniforms.uTime.value = store.time
       m.uniforms.uIntensity.value = I
     })
-    g.visible = I > 0.0005
+    g.visible = I > 0.0005 || store.time < 1.5
   })
 
   return (

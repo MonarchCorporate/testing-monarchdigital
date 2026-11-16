@@ -1,7 +1,9 @@
 /**
  * Canvas + renderer setup.
  *  - sRGB output, ACES filmic applied in the post chain (renderer itself is `flat`: NoToneMapping);
- *  - soft PCF shadows (keys only), DPR capped once at start (never switched at runtime).
+ *  - soft PCF shadows (keys only), DPR capped once at start (never switched at runtime) by a pixel budget;
+ *  - the frame loop stops while the stage is scrolled out of view (the case study below), so the page
+ *    underneath scrolls without a WebGL scene competing for the GPU.
  */
 import { Suspense, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
@@ -9,18 +11,29 @@ import * as THREE from 'three'
 import { config } from '../config'
 import { store } from '../state/store'
 import { patchFogChunks } from './environment/fogChunks'
+import { environmentData } from './environment/terrainData'
 import { Scene } from './Scene'
 import styles from '../App.module.css'
 
 patchFogChunks()
+// start building the valley in its worker right away, in parallel with the keycap download
+void environmentData()
 
-export function Experience() {
-  const [dpr] = useState<number>(() => Math.min(window.devicePixelRatio || 1, config.performance.dpr[1]))
+function initialDpr() {
+  const P = config.performance
+  const css = Math.max(1, window.innerWidth * window.innerHeight)
+  const budget = Math.sqrt(P.pixelBudget / css)
+  return Math.max(P.dpr[0], Math.min(window.devicePixelRatio || 1, P.dpr[1], budget))
+}
+
+export function Experience({ active = true }: { active?: boolean }) {
+  const [dpr] = useState<number>(initialDpr)
 
   return (
     <Canvas
       className={styles.webgl}
       dpr={dpr}
+      frameloop={active ? 'always' : 'never'}
       flat
       shadows="soft"
       gl={{ antialias: false, powerPreference: 'high-performance', stencil: false, alpha: false, depth: true }}

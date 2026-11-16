@@ -9,7 +9,6 @@ import { restartExperience } from '../scroll/useScrollTimeline'
 import { FocusReveal } from './FocusReveal'
 import { FadeUpLines } from './FadeUpLines'
 import { Preloader } from './Preloader'
-import { Cursor } from './Cursor'
 import { config } from '../config'
 import { content } from '../content'
 import styles from './Interface.module.css'
@@ -71,7 +70,6 @@ export function Interface() {
         </button>
       </div>
       <Preloader />
-      <Cursor />
     </div>
   )
 }
